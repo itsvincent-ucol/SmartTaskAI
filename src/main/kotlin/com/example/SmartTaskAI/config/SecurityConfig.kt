@@ -1,6 +1,6 @@
 package com.example.SmartTaskAI.config
 
-import com.example.SmartTaskAI.security.JwtAuthenticationFilter
+import com.example.SmartTaskAI.security.JwtAuthFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -13,8 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-// Tambahkan parameter di constructor untuk menyuntikkan (inject) Filter yang baru kita buat
-class SecurityConfig(private val jwtAuthFilter: JwtAuthenticationFilter) { 
+class SecurityConfig(private val jwtAuthFilter: JwtAuthFilter) { // Menyuntikkan filter JWT di sini
 
     @Bean
     fun passwordEncoder(): PasswordEncoder {
@@ -28,11 +27,12 @@ class SecurityConfig(private val jwtAuthFilter: JwtAuthenticationFilter) {
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/api/auth/register", "/api/auth/login", "/api/test/db").permitAll()
-                    .requestMatchers("/api/tasks/**").authenticated()
+                    // Endpoint Publik (Bisa diakses siapa saja, TERMASUK folder uploads)
+                    .requestMatchers("/api/auth/register", "/api/auth/login", "/api/test/db", "/uploads/**").permitAll()
+                    // Semua rute lainnya wajib menggunakan Token
                     .anyRequest().authenticated()
             }
-            // BARIS KRUSIAL: Taruh penjaga JWT kita di barisan paling depan
+            // Tambahkan filter JWT kita SEBELUM filter autentikasi standar milik Spring
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
         
         return http.build()
