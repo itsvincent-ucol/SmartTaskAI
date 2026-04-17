@@ -38,3 +38,7 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+
+### Spring Boot ###
+src/main/resources/application.properties
