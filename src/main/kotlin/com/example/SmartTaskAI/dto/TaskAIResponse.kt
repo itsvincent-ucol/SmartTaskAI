@@ -1,8 +1,8 @@
 package com.example.SmartTaskAI.dto
 
-// Pastikan property-nya persis dengan format JSON yang akan kita minta dari AI
+// Menambahkan nilai default agar Jackson bisa melakukan deserialize (mengubah JSON ke Object)
 data class TaskAIResponse(
-    val title: String,
-    val priority: String,
-    val description: String
+    val title: String = "",
+    val priority: String = "MEDIUM",
+    val description: String = ""
 )

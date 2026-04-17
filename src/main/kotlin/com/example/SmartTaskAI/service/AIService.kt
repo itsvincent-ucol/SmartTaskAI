@@ -25,7 +25,7 @@ class AIService {
         val base64Image = Base64.getEncoder().encodeToString(file.bytes)
         
         // Kita gunakan versi 2.0 Flash karena lebih cepat dan kuota gratisnya lebih besar
-        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey"
+        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey"
         
         val promptText = """
             Anda adalah asisten AI untuk ICT Support Sekolah. 

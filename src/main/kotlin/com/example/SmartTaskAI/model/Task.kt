@@ -2,6 +2,7 @@ package com.example.SmartTaskAI.model
 
 import jakarta.persistence.*
 import java.time.LocalDateTime
+import java.time.LocalDate // Tambahan wajib untuk tanggal hari ini
 
 @Entity
 @Table(name = "tasks")
@@ -11,23 +12,26 @@ data class Task(
     val id: Long = 0,
 
     @Column(nullable = false)
-    val title: String = "", // Added default empty string
+    val title: String = "",
 
     @Column(nullable = false)
-    val priority: String = "LOW", // Added default value
+    val priority: String = "LOW",
 
     @Column(nullable = false)
-    val description: String = "", // Added default empty string
+    val status: String = "PENDING", 
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    val description: String = "",
 
     @Column(name = "image_url")
-    val imageUrl: String? = null, // Made nullable with default null
+    val imageUrl: String? = null,
 
     @Column(name = "created_by", nullable = false)
-    val createdBy: String = "System", // Added default value
+    val createdBy: String = "System",
 
     @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(), // Added default value
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(name = "due_date")
-    val dueDate: LocalDateTime? = null // Already has default null
+    val dueDate: LocalDate = LocalDate.now() 
 )

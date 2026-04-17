@@ -8,6 +8,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.LocalDateTime
+import java.time.LocalDate
 import java.net.InetAddress
 import java.util.UUID
 
@@ -17,11 +18,9 @@ class TaskService(
     private val aiService: AIService
 ) {
 
-    // 1. Menentukan nama folder tempat menyimpan foto (Wajib ada di dalam class)
     private val UPLOAD_DIR = "uploads/"
 
     init {
-        // Otomatis membuat folder "uploads" saat aplikasi pertama kali jalan
         val uploadDir = File(UPLOAD_DIR)
         if (!uploadDir.exists()) {
             uploadDir.mkdirs()
@@ -31,14 +30,11 @@ class TaskService(
     fun processAndSaveAITask(file: MultipartFile, rawTitle: String?): Task {
         val finalTitle = rawTitle ?: "Laporan Tanpa Judul"
         
-        // --- 2. PROSES SIMPAN FILE FISIK ---
         val originalFilename = file.originalFilename?.replace(" ", "_") ?: "image.jpg"
         val uniqueFilename = "${UUID.randomUUID()}_$originalFilename"
         val filePath = Paths.get(UPLOAD_DIR, uniqueFilename)
-        
-        Files.write(filePath, file.bytes) // Simpan gambar ke hard drive
-        val savedImageUrl = "/uploads/$uniqueFilename" // Buat URL untuk Android
-        // -----------------------------------
+        Files.write(filePath, file.bytes)
+        val savedImageUrl = "/uploads/$uniqueFilename"
 
         val manualResult = runManualClassification(finalTitle)
         var finalPriority = manualResult.priority
@@ -49,17 +45,14 @@ class TaskService(
         if (isOnline) {
             try {
                 val aiAnalysis = aiService.analyzeImage(file)
-                // Menggunakan savedImageUrl yang asli
                 return saveTask(aiAnalysis.title, aiAnalysis.priority, aiAnalysis.description, savedImageUrl)
             } catch (e: Exception) {
                 println("⚠️ AI Error (Mungkin Limit): ${e.message}")
             }
         } else {
-            println("🌐 Server Offline: Fitur AI dinonaktifkan otomatis.")
             finalDescription += " (Mode Offline: AI dimatikan)"
         }
 
-        // Menggunakan savedImageUrl yang asli
         return saveTask(finalTitle, finalPriority, finalDescription, savedImageUrl)
     }
 
@@ -69,8 +62,6 @@ class TaskService(
 
     fun deleteTask(id: Long) {
         val task = taskRepository.findById(id).orElseThrow { RuntimeException("Task dengan ID $id tidak ditemukan") }
-        
-        // Hapus file fisik dari folder uploads
         if (task.imageUrl != null) {
             val fileName = task.imageUrl.substringAfterLast("/")
             val file = File(UPLOAD_DIR + fileName)
@@ -78,15 +69,34 @@ class TaskService(
                 file.delete()
             }
         }
-        
         taskRepository.deleteById(id)
     }
 
     fun updateTaskPriority(id: Long, newPriority: String): Task {
         val task = taskRepository.findById(id).orElseThrow { RuntimeException("Task dengan ID $id tidak ditemukan") }
-        val updatedTask = task.copy(priority = newPriority)
-        return taskRepository.save(updatedTask)
+        return taskRepository.save(task.copy(priority = newPriority))
     }
+
+    fun updateTaskStatus(id: Long, newStatus: String): Task {
+        val task = taskRepository.findById(id).orElseThrow { RuntimeException("Task dengan ID $id tidak ditemukan") }
+        return taskRepository.save(task.copy(status = newStatus))
+    }
+
+    // --- PERBAIKAN: Parameter dueDate sekarang menggunakan LocalDate ---
+    fun createManualTask(title: String, description: String, priority: String, dueDate: LocalDate?): Task {
+        val task = Task(
+            title = title,
+            description = description,
+            priority = priority,
+            status = "PENDING",
+            imageUrl = null, // Laporan manual tidak punya foto
+            dueDate = dueDate ?: LocalDate.now(), // Jika kosong di JSON, pakai tanggal hari ini
+            createdBy = "ICT Support Staff",
+            createdAt = LocalDateTime.now()
+        )
+        return taskRepository.save(task)
+    }
+    // -----------------------------------------------------------------
 
     private fun isInternetAvailable(): Boolean {
         return try {
@@ -109,7 +119,6 @@ class TaskService(
         }
     }
 
-    // Fungsi saveTask sekarang wajib menerima parameter imgUrl
     private fun saveTask(t: String, p: String, d: String, imgUrl: String): Task {
         return taskRepository.save(Task(
             title = t,
