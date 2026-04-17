@@ -2,15 +2,17 @@ package com.example.SmartTaskAI.controller
 
 import com.example.SmartTaskAI.model.Task
 import com.example.SmartTaskAI.service.TaskService
-import com.example.SmartTaskAI.dto.TaskRequest // IMPORT YANG HILANG SEBELUMNYA
+import com.example.SmartTaskAI.dto.TaskRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
+// Buat API untuk membuat task baru
 @RequestMapping("/api/tasks")
 class TaskController(private val taskService: TaskService) {
 
+    // Jika ada internet di device pengguna maka akan menggunakan Gemini API AI untuk menganalisa
     @PostMapping("/analyze")
     fun uploadAndAnalyze(
         @RequestParam("file") file: MultipartFile,
@@ -20,6 +22,7 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok(task)
     }
 
+    // Jika user ingin memasukkan secara langsung dan sudah mengetahui masalahnya
     @PostMapping("/manual")
     fun createManualTask(@RequestBody request: TaskRequest): ResponseEntity<Task> {
         val task = taskService.createManualTask(
@@ -37,6 +40,7 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok(tasks)
     }
 
+    // API untuk mengatur priority dari task
     @PutMapping("/{id}/priority")
     fun updatePriority(
         @PathVariable id: Long,
@@ -46,6 +50,7 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok(updatedTask)
     }
 
+    // API untuk mengatur status dari task
     @PutMapping("/{id}/status")
     fun updateStatus(
         @PathVariable id: Long,
@@ -55,6 +60,7 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok(updatedTask)
     }
 
+    // API untuk menghapus task yang ada
     @DeleteMapping("/{id}")
     fun deleteTask(@PathVariable id: Long): ResponseEntity<Map<String, String>> {
         taskService.deleteTask(id)

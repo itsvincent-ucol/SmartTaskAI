@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
+// API untuk melakukan pengecheckkan koneksi dari backend ke server database secara langsung
 @RequestMapping("/api/test")
 class TestDbController(private val jdbcTemplate: JdbcTemplate) {
 

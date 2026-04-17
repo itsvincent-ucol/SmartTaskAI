@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/auth")
 class AuthController(private val authService: AuthService) {
 
-    // POST http://localhost:8080/api/auth/register
+    // Buat API URL untuk daftar user baru
     @PostMapping("/register")
     fun register(@RequestBody request: RegisterRequest): ResponseEntity<Any> {
         return try {
@@ -26,7 +26,7 @@ class AuthController(private val authService: AuthService) {
         }
     }
 
-    // POST http://localhost:8080/api/auth/login
+    // Buat API URL agar user dapat login
     @PostMapping("/login")
     fun login(@RequestBody request: LoginRequest): ResponseEntity<Any> {
         return try {

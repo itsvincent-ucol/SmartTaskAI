@@ -20,7 +20,7 @@ class JwtAuthFilter(private val jwtUtil: JwtUtil) : OncePerRequestFilter() {
     ) {
         val authHeader = request.getHeader("Authorization")
 
-        // Jika tidak ada token atau formatnya salah, biarkan lewat (nanti akan diblokir oleh SecurityConfig)
+        // Jika tidak ada token atau formatnya salah, biarkan lewat karena secara otomatis akan diblokir oleh SecurityConfig
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response)
             return

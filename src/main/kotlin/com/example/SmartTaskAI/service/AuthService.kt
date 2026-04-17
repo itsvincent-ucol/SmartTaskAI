@@ -17,7 +17,7 @@ class AuthService(
 ) {
 
     fun register(request: RegisterRequest): AuthResponse {
-        // Memaksa data dari DTO menjadi String mutlak
+        // Membuat data dari DTO menjadi string
         val reqEmail: String = request.email?.toString() ?: ""
         val reqPass: String = request.password?.toString() ?: ""
 
@@ -25,7 +25,7 @@ class AuthService(
             throw RuntimeException("Email sudah terdaftar!")
         }
 
-        // Memaksa hasil enkripsi Java menjadi String mutlak Kotlin
+        // Membuat hasil enkripsi Java menjadi string di Kotlin
         val hashed: String = passwordEncoder.encode(reqPass) ?: ""
         
         val newUser = User(
@@ -35,7 +35,7 @@ class AuthService(
         )
         userRepository.save(newUser)
 
-        // Memastikan parameter untuk Token adalah String
+        // Memastikan parameter untuk oken adalah string
         val tokenStr: String = jwtUtil.generateToken(newUser.email, newUser.role)
         return AuthResponse(tokenStr, newUser.email, newUser.role)
     }
@@ -47,7 +47,7 @@ class AuthService(
         val user = userRepository.findByEmail(reqEmail) 
             ?: throw RuntimeException("Email atau Password salah!")
 
-        // Memaksa password dari database menjadi String mutlak
+        // Memaksa password dari database menjadi string mutlak
         val dbPass: String = user.password?.toString() ?: ""
 
         if (!passwordEncoder.matches(reqPass, dbPass)) {

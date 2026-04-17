@@ -2,7 +2,7 @@ package com.example.SmartTaskAI.model
 
 import jakarta.persistence.*
 import java.time.LocalDateTime
-import java.time.LocalDate // Tambahan wajib untuk tanggal hari ini
+import java.time.LocalDate
 
 @Entity
 @Table(name = "tasks")
@@ -33,5 +33,5 @@ data class Task(
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(name = "due_date")
-    val dueDate: LocalDate = LocalDate.now() 
+    val dueDate: LocalDate = LocalDate.now()  // Secara default akan menggunakan duedate hari ini
 )

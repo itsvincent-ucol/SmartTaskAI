@@ -14,6 +14,7 @@ import java.util.Base64
 @Service
 class AIService {
 
+    // Tersimpan di application.properties
     @Value("\${gemini.api.key}")
     private lateinit var apiKey: String
 
@@ -24,7 +25,6 @@ class AIService {
         val mimeType = file.contentType ?: "image/jpeg"
         val base64Image = Base64.getEncoder().encodeToString(file.bytes)
         
-        // Kita gunakan versi 2.0 Flash karena lebih cepat dan kuota gratisnya lebih besar
         val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey"
         
         val promptText = """

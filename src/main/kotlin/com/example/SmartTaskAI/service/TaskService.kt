@@ -20,8 +20,9 @@ class TaskService(
 
     private val UPLOAD_DIR = "uploads/"
 
+    // Dijalankan pertama kali saat aplikasi start
     init {
-        val uploadDir = File(UPLOAD_DIR)
+        val uploadDir = File(UPLOAD_DIR) // Letak direktori file yang diupload
         if (!uploadDir.exists()) {
             uploadDir.mkdirs()
         }
@@ -30,9 +31,12 @@ class TaskService(
     fun processAndSaveAITask(file: MultipartFile, rawTitle: String?): Task {
         val finalTitle = rawTitle ?: "Laporan Tanpa Judul"
         
+        // Mengubah nama file menjadi unik (pakai UUID) agar tidak ada yang sama nama filenya
         val originalFilename = file.originalFilename?.replace(" ", "_") ?: "image.jpg"
         val uniqueFilename = "${UUID.randomUUID()}_$originalFilename"
         val filePath = Paths.get(UPLOAD_DIR, uniqueFilename)
+
+        // Menulis byte file ke dalam folder uploads
         Files.write(filePath, file.bytes)
         val savedImageUrl = "/uploads/$uniqueFilename"
 
@@ -40,26 +44,33 @@ class TaskService(
         var finalPriority = manualResult.priority
         var finalDescription = manualResult.description
 
+        // Cek apakah ada internet untuk memanggil Gemini AI
         val isOnline = isInternetAvailable()
 
         if (isOnline) {
             try {
+                // AI Service untuk menganalisa gambar dengan API AI
                 val aiAnalysis = aiService.analyzeImage(file)
+
+                // Jika AI berhasil, langsung simpan dan return hasilnya
                 return saveTask(aiAnalysis.title, aiAnalysis.priority, aiAnalysis.description, savedImageUrl)
             } catch (e: Exception) {
-                println("⚠️ AI Error (Mungkin Limit): ${e.message}")
+                // Jika AI gagal masukkan log error dan lanjut ke mode offline
+                println("AI Error (Mungkin kena limit)  ${e.message}")
             }
         } else {
-            finalDescription += " (Mode Offline: AI dimatikan)"
+            finalDescription += " (Offline  AI dimatikan)"
         }
 
         return saveTask(finalTitle, finalPriority, finalDescription, savedImageUrl)
     }
 
+    // Mengambil semua task yang ada dan diurutkan dari yang terbaru
     fun getAllTasks(): List<Task> {
         return taskRepository.findAll().sortedByDescending { it.createdAt }
     }
 
+    // Menghapus task beserta foto yang diupload user pada folder uploads
     fun deleteTask(id: Long) {
         val task = taskRepository.findById(id).orElseThrow { RuntimeException("Task dengan ID $id tidak ditemukan") }
         if (task.imageUrl != null) {
@@ -72,17 +83,19 @@ class TaskService(
         taskRepository.deleteById(id)
     }
 
+    // Update prioritas
     fun updateTaskPriority(id: Long, newPriority: String): Task {
         val task = taskRepository.findById(id).orElseThrow { RuntimeException("Task dengan ID $id tidak ditemukan") }
         return taskRepository.save(task.copy(priority = newPriority))
     }
 
+    // Update status task
     fun updateTaskStatus(id: Long, newStatus: String): Task {
         val task = taskRepository.findById(id).orElseThrow { RuntimeException("Task dengan ID $id tidak ditemukan") }
         return taskRepository.save(task.copy(status = newStatus))
     }
 
-    // --- PERBAIKAN: Parameter dueDate sekarang menggunakan LocalDate ---
+    // Membuat task secara manual (tanpa upload file dan AI)
     fun createManualTask(title: String, description: String, priority: String, dueDate: LocalDate?): Task {
         val task = Task(
             title = title,
@@ -90,14 +103,14 @@ class TaskService(
             priority = priority,
             status = "PENDING",
             imageUrl = null, // Laporan manual tidak punya foto
-            dueDate = dueDate ?: LocalDate.now(), // Jika kosong di JSON, pakai tanggal hari ini
+            dueDate = dueDate ?: LocalDate.now(), // Secara default menggunakan tanggal saat itu juga task dibuat
             createdBy = "ICT Support Staff",
             createdAt = LocalDateTime.now()
         )
         return taskRepository.save(task)
     }
-    // -----------------------------------------------------------------
 
+    // Function untuk cek koneksi Internet dengan google dns server public
     private fun isInternetAvailable(): Boolean {
         return try {
             val address = InetAddress.getByName("8.8.8.8")
@@ -107,6 +120,7 @@ class TaskService(
         }
     }
 
+    // Logika klasifikasi sederhana jika tidak ada internet
     private fun runManualClassification(title: String): ManualCheck {
         val lower = title.lowercase()
         return when {
@@ -119,6 +133,7 @@ class TaskService(
         }
     }
 
+    // Helper function untuk menyimpan objek Task ke database
     private fun saveTask(t: String, p: String, d: String, imgUrl: String): Task {
         return taskRepository.save(Task(
             title = t,
