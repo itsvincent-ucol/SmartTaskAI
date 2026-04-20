@@ -5,11 +5,12 @@ import com.example.SmartTaskAI.repository.TaskRepository
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
+import java.net.InetSocketAddress
+import java.net.Socket
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.LocalDate
-import java.net.InetAddress
 import java.util.UUID
 
 @Service
@@ -56,7 +57,7 @@ class TaskService(
                 return saveTask(aiAnalysis.title, aiAnalysis.priority, aiAnalysis.description, savedImageUrl)
             } catch (e: Exception) {
                 // Jika AI gagal masukkan log error dan lanjut ke mode offline
-                println("AI Error (Mungkin kena limit)  ${e.message}")
+                println("AI Error (Mungkin kena limit): ${e.message}")
             }
         } else {
             finalDescription += " (Offline  AI dimatikan)"
@@ -110,11 +111,14 @@ class TaskService(
         return taskRepository.save(task)
     }
 
-    // Function untuk cek koneksi Internet dengan google dns server public
+    // Function untuk cek koneksi Internet dengan metode TCP Socket (Aman untuk Linux/VPS)
     private fun isInternetAvailable(): Boolean {
         return try {
-            val address = InetAddress.getByName("8.8.8.8")
-            address.isReachable(2000)
+            Socket().use { socket ->
+                // Ketuk pintu server DNS Google (8.8.8.8) di port 53 (DNS) dengan batas waktu 3 detik
+                socket.connect(InetSocketAddress("8.8.8.8", 53), 3000)
+                true
+            }
         } catch (e: Exception) {
             false
         }
