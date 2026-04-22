@@ -2,18 +2,19 @@ package com.example.SmartTaskAI.controller
 
 import com.example.SmartTaskAI.model.Task
 import com.example.SmartTaskAI.service.TaskService
-import com.example.SmartTaskAI.dto.TaskRequest
+// TaskRequest tidak lagi dipakai di endpoint ini karena kita menerima Multipart
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-// Buat API untuk membuat task baru
 @RequestMapping("/api/tasks")
+@CrossOrigin(origins = ["*"]) // Menghindari masalah pemblokiran CORS dari Android
 class TaskController(private val taskService: TaskService) {
 
     // Jika ada internet di device pengguna maka akan menggunakan Gemini API AI untuk menganalisa
-    @PostMapping("/analyze")
+    @PostMapping(value = ["/analyze"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadAndAnalyze(
         @RequestParam("file") file: MultipartFile,
         @RequestParam("title", required = false) rawTitle: String?
@@ -22,14 +23,21 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok(task)
     }
 
-    // Jika user ingin memasukkan secara langsung dan sudah mengetahui masalahnya
-    @PostMapping("/manual")
-    fun createManualTask(@RequestBody request: TaskRequest): ResponseEntity<Task> {
+    // PERBAIKAN: Menggunakan @RequestParam agar bisa membaca Teks + Foto dari Android
+    @PostMapping(value = ["/manual"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun createManualTask(
+        @RequestParam("title") title: String,
+        @RequestParam("description") description: String,
+        @RequestParam("priority") priority: String,
+        @RequestParam(value = "file", required = false) file: MultipartFile? // Foto opsional
+    ): ResponseEntity<Task> {
+        
         val task = taskService.createManualTask(
-            title = request.title,
-            description = request.description,
-            priority = request.priority,
-            dueDate = request.dueDate
+            title = title,
+            description = description,
+            priority = priority,
+            dueDate = null, // Atur default null, atau sesuaikan jika butuh input tanggal
+            file = file     // Kirim file ini ke Service untuk disimpan
         )
         return ResponseEntity.ok(task)
     }
