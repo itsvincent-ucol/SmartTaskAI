@@ -89,6 +89,40 @@ class TaskService(
         return taskRepository.save(task.copy(status = newStatus))
     }
 
+    // ========================================================
+    // FITUR UPDATE BARU (UNTUK SINGLE-FIELD UPDATE)
+    // ========================================================
+
+    fun updateTaskTitle(id: Long, newTitle: String): Task {
+        val task = taskRepository.findById(id).orElseThrow { RuntimeException("Task dengan ID $id tidak ditemukan") }
+        return taskRepository.save(task.copy(title = newTitle))
+    }
+
+    fun updateTaskDescription(id: Long, newDescription: String): Task {
+        val task = taskRepository.findById(id).orElseThrow { RuntimeException("Task dengan ID $id tidak ditemukan") }
+        return taskRepository.save(task.copy(description = newDescription))
+    }
+
+    fun updateTaskDueDate(id: Long, newDueDate: String): Task {
+        val task = taskRepository.findById(id).orElseThrow { RuntimeException("Task dengan ID $id tidak ditemukan") }
+        
+        // Ubah format String (cth: "2026-04-30") menjadi LocalDate agar bisa disimpan
+        val parsedDate = try {
+            LocalDate.parse(newDueDate)
+        } catch (e: Exception) {
+            LocalDate.now() // Jika format salah, kembalikan ke tanggal hari ini
+        }
+        
+        return taskRepository.save(task.copy(dueDate = parsedDate))
+    }
+
+    fun updateTaskImageUrl(id: Long, newImageUrl: String): Task {
+        val task = taskRepository.findById(id).orElseThrow { RuntimeException("Task dengan ID $id tidak ditemukan") }
+        return taskRepository.save(task.copy(imageUrl = newImageUrl))
+    }
+
+    // ========================================================
+
     // --- PERBAIKAN: Tambahkan parameter 'file' di sini ---
     fun createManualTask(
         title: String, 

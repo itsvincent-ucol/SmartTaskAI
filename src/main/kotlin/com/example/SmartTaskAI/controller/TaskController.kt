@@ -2,7 +2,6 @@ package com.example.SmartTaskAI.controller
 
 import com.example.SmartTaskAI.model.Task
 import com.example.SmartTaskAI.service.TaskService
-// TaskRequest tidak lagi dipakai di endpoint ini karena kita menerima Multipart
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -48,7 +47,10 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok(tasks)
     }
 
-    // API untuk mengatur priority dari task
+    // ==========================================
+    // AREA UPDATE DATA (SINGLE-FIELD UPDATE)
+    // ==========================================
+
     @PutMapping("/{id}/priority")
     fun updatePriority(
         @PathVariable id: Long,
@@ -58,7 +60,6 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok(updatedTask)
     }
 
-    // API untuk mengatur status dari task
     @PutMapping("/{id}/status")
     fun updateStatus(
         @PathVariable id: Long,
@@ -68,7 +69,46 @@ class TaskController(private val taskService: TaskService) {
         return ResponseEntity.ok(updatedTask)
     }
 
-    // API untuk menghapus task yang ada
+    @PutMapping("/{id}/title")
+    fun updateTitle(
+        @PathVariable id: Long,
+        @RequestParam title: String
+    ): ResponseEntity<Task> {
+        val updatedTask = taskService.updateTaskTitle(id, title)
+        return ResponseEntity.ok(updatedTask)
+    }
+
+    @PutMapping("/{id}/description")
+    fun updateDescription(
+        @PathVariable id: Long,
+        @RequestParam description: String
+    ): ResponseEntity<Task> {
+        val updatedTask = taskService.updateTaskDescription(id, description)
+        return ResponseEntity.ok(updatedTask)
+    }
+
+    @PutMapping("/{id}/due_date")
+    fun updateDueDate(
+        @PathVariable id: Long,
+        @RequestParam("due_date") dueDate: String
+    ): ResponseEntity<Task> {
+        val updatedTask = taskService.updateTaskDueDate(id, dueDate)
+        return ResponseEntity.ok(updatedTask)
+    }
+
+    @PutMapping("/{id}/image_url")
+    fun updateImageUrl(
+        @PathVariable id: Long,
+        @RequestParam("image_url") imageUrl: String
+    ): ResponseEntity<Task> {
+        val updatedTask = taskService.updateTaskImageUrl(id, imageUrl)
+        return ResponseEntity.ok(updatedTask)
+    }
+
+    // ==========================================
+    // AREA DELETE DATA
+    // ==========================================
+
     @DeleteMapping("/{id}")
     fun deleteTask(@PathVariable id: Long): ResponseEntity<Map<String, String>> {
         taskService.deleteTask(id)
