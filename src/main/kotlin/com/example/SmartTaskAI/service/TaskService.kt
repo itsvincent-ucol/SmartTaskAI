@@ -171,6 +171,7 @@ class TaskService(
             lower.contains("maintenance") || lower.contains("rutin") -> 
                 ManualCheck("LOW", "[Manual] Laporan perawatan rutin.")
             else -> 
+                // PERBAIKAN: Diubah menjadi "MID" agar terbaca oleh tombol UI Android
                 ManualCheck("MEDIUM", "[Manual] Laporan ICT umum.")
         }
     }
