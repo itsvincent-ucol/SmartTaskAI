@@ -1,4 +1,4 @@
-package com.example.smarttaskai.viewmodel
+package com.example.smarttaskai.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -16,25 +16,26 @@ import retrofit2.HttpException
 import java.io.IOException
 import com.example.smarttaskai.data.local.TokenManager
 
-// PERBAIKAN 1: Tambahkan tokenManager ke dalam parameter ViewModel
 class AuthViewModel(
     private val repository: AppRepository,
-    private val tokenManager: TokenManager // <-- Ini yang sebelumnya hilang
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
+    // State untuk memantau status login (apakah lagi loading, sukses, atau error).
     private val _loginState = MutableStateFlow<UiState<AuthResponse>>(UiState.Idle)
     val loginState: StateFlow<UiState<AuthResponse>> = _loginState.asStateFlow()
 
+    // State terpisah untuk registrasi agar pesannya tidak tertukar dengan login.
     private val _registerState = MutableStateFlow<UiState<AuthResponse>>(UiState.Idle)
     val registerState: StateFlow<UiState<AuthResponse>> = _registerState.asStateFlow()
 
+    // Proses login dan jika berhasil, token akan disimpan ke dalam TokenManager (DataStore lokal HP).
     fun login(email: String, pass: String) {
         viewModelScope.launch {
             _loginState.value = UiState.Loading
             try {
                 val response = repository.login(LoginRequest(email, pass))
 
-                // JIKA SUKSES: SIMPAN TOKEN KE BRANKAS SEBELUM PINDAH LAYAR
                 tokenManager.saveToken(response.token)
 
                 _loginState.value = UiState.Success(response)
@@ -46,6 +47,7 @@ class AuthViewModel(
         }
     }
 
+    // Proses register dan jika sukses, UI akan diarahkan kembali ke layar Login.
     fun register(name: String, email: String, pass: String) {
         viewModelScope.launch {
             _registerState.value = UiState.Loading
@@ -62,19 +64,18 @@ class AuthViewModel(
         }
     }
 
+    // Mengembalikan status UI menjadi Idle (diam)
     fun resetStates() {
         _loginState.value = UiState.Idle
         _registerState.value = UiState.Idle
     }
 }
 
-// Pabrik (Factory) untuk membuat ViewModel yang butuh parameter Repository & TokenManager
 class AuthViewModelFactory(
     private val repository: AppRepository,
     private val tokenManager: TokenManager
 ) : ViewModelProvider.Factory {
 
-    // PERBAIKAN 2: Mengembalikan format generic <T : ViewModel> yang terhapus
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")

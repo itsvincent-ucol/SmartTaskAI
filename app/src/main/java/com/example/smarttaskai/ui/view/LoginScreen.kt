@@ -1,4 +1,4 @@
-package com.example.smarttaskai.view
+package com.example.smarttaskai.ui.view
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.smarttaskai.data.UiState
 import com.example.smarttaskai.ui.theme.PrimaryBlue
-import com.example.smarttaskai.viewmodel.AuthViewModel
+import com.example.smarttaskai.ui.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(
